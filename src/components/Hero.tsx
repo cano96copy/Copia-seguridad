@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import heroImage from "@/assets/hero-workspace.jpg";
+import { useNavigate } from "react-router-dom";
+import CircularChart from "./CircularChart";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  
   return (
     <section className="relative bg-background py-20 md:py-32 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -19,11 +22,23 @@ const Hero = () => {
               Accede a GPTs especializados que escriben posts de LinkedIn, cartas de ventas, emails y todo el copy que tu negocio necesita. Sin contratar. Sin esperar. Sin complicaciones.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="text-base font-semibold h-14 px-8 shadow-lg hover:shadow-xl transition-all">
+              <Button 
+                size="lg" 
+                className="text-base font-semibold h-14 px-8 shadow-lg hover:shadow-xl transition-all"
+                onClick={() => navigate("/register")}
+              >
                 Empezar ahora
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="outline" size="lg" className="text-base font-semibold h-14 px-8 border-2">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-base font-semibold h-14 px-8 border-2"
+                onClick={() => {
+                  const element = document.getElementById("pricing");
+                  element?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
                 Ver cómo funciona
               </Button>
             </div>
@@ -39,15 +54,10 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Image */}
+          {/* Right Chart */}
           <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src={heroImage}
-                alt="Workspace con IA de copywriting"
-                className="w-full h-auto"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
+            <div className="relative rounded-2xl p-8 bg-gradient-to-br from-background to-muted/20">
+              <CircularChart />
             </div>
             {/* Floating Stats */}
             <div className="absolute -bottom-6 -left-6 bg-card rounded-xl p-6 shadow-xl border border-border hidden md:block">
