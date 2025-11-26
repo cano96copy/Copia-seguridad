@@ -1,38 +1,65 @@
 // src/lib/subscriptions.ts
 import { supabase } from "./supabase";
 
-type SubscriptionStatus = "trialing" | "active" | "cancelled" | "expired";
+/**
+ * Obtiene la suscripción del usuario actual.
+ * La creación de suscripciones se maneja automáticamente via webhook de Clerk.
+ */
+export async function getUserSubscription(clerkUserId: string) {
+  if (!clerkUserId) return null;
 
-export async function upsertSubscription(params: {
-  userId: string;          // ID del usuario (el de Clerk)
-  planId: number;          // id del plan (columna plans.id)
-  status?: SubscriptionStatus;
-  trialEndsAt?: string | null;
-  currentPeriodEnd?: string | null;
-}) {
-  const { userId, planId, status, trialEndsAt, currentPeriodEnd } = params;
+  try {
+    // Primero buscar el usuario por clerk_user_id
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("clerk_user_id", clerkUserId)
+      .maybeSingle();
 
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .upsert(
-      {
-        user_id: userId,
-        plan_id: planId,
-        status: status ?? "trialing",
-        trial_ends_at: trialEndsAt ?? null,
-        current_period_end: currentPeriodEnd ?? null,
-      },
-      {
-        onConflict: "user_id", // si ya hay una fila con ese usuario, la actualiza
-      }
-    )
-    .select()
-    .single();
+    if (userError) {
+      console.error("Error buscando usuario:", userError);
+      return null;
+    }
 
-  if (error) {
-    console.error("Error guardando suscripción en Supabase", error);
-    throw error;
+    if (!user) {
+      console.log("Usuario no encontrado, esperando webhook de Clerk...");
+      return null;
+    }
+
+    // Buscar la suscripción del usuario con los datos del plan
+    const { data: subscription, error: subError } = await supabase
+      .from("subscriptions")
+      .select(`
+        *,
+        plans (
+          id,
+          name,
+          description,
+          price,
+          interval,
+          features
+        )
+      `)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (subError) {
+      console.error("Error buscando suscripción:", subError);
+      return null;
+    }
+
+    console.log("=== getUserSubscription ===");
+    console.log("User encontrado:", user);
+    console.log("Subscription encontrada:", subscription);
+    console.log("Status de subscription:", subscription?.status);
+
+    return {
+      user,
+      subscription,
+    };
+
+  } catch (error) {
+    console.error("Error en getUserSubscription:", error);
+    return null;
   }
-
-  return data;
 }

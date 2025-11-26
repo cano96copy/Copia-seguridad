@@ -15,7 +15,7 @@ const Index = () => {
       <GPTsShowcase />
       <Benefits />
       <div id="pricing">
-        <Pricing />
+      <Pricing />
       </div>
       <Clients />
       <About />
