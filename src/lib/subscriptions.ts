@@ -28,7 +28,7 @@ export async function getUserSubscription(clerkUserId: string) {
 
     // Buscar la suscripción del usuario con los datos del plan
     const { data: subscription, error: subError } = await supabase
-      .from("subscriptions")
+    .from("subscriptions")
       .select(`
         *,
         plans (
